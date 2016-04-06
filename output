@@ -1,0 +1,12 @@
+if           line 1 cols 1-2 is T_If 
+ while        line 1 cols 4-8 is T_While 
+ else         line 1 cols 10-13 is T_Else 
+ ==           line 2 cols 1-2 is T_EQ 
+=            line 3 cols 1-1 is T_Equal 
+-=           line 4 cols 1-2 is T_SubAssign 
++=           line 5 cols 1-2 is T_AddAssign 
++            line 6 cols 1-1 is T_Plus 
+ =            line 6 cols 3-3 is T_Equal 
+>            line 7 cols 1-1 is T_RightAngle 
+>=           line 8 cols 1-2 is T_GreaterEqual 
+ <=           line 8 cols 4-5 is T_LessEqual 

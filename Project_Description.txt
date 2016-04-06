@@ -1,0 +1,79 @@
+tab
+space
+void
+const
+uniform
+break
+continue
+do
+for
+while
+switch
+case
+default
+if
+else
+in
+out
+mat2
+mat3
+mat4
+vec2
+vec3
+vec4
+ivec2
+ivec3
+ivec4
+bvec2
+bvec3
+bvec4
+uint
+uvec2
+uvec3
+uvec4
+struct
+true
+false
+float
+int
+bool
+return
+dash
+plus
+star
+slash
+equal
+leftangle
+rightangle
+>=
+<=
+
+__________________
+()
+unary + -
+*
+/
+additive + -
+< >
+<= >=
+== !=
+&&
+||
+
+comments #treated as single space
+
+tokens
+
+semicolon
+curly brace
+
+identifier #1024 max length
+nondigit
+digit
+
+integer-constant:
+	decimal-constant
+	integer-suffix
+floating-constant
+fractional-constant:
+	digit sequence . digit-sequence
