@@ -47,6 +47,7 @@ static void DoBeforeEachAction();
 #define YY_USER_ACTION DoBeforeEachAction();
 
 int currentLineNum, currentColNum;
+int flag = 0; /* flag for field selection */
 
 %}
 
@@ -58,6 +59,14 @@ int currentLineNum, currentColNum;
   */
 
 BOOLEAN   (true|false)
+COMMENT   (\/\*([^*]|(\*+([^*\/])))*\*+\/)
+SL_COMMENT (\/\/.*)
+FRAC_CONST ([0-9]+\.[0-9]+)
+EXP        ([eE][-+]?[0-9]+)
+FLOAT_CONST (({FRAC_CONST}{EXP}?[fF]?)|[0-9]+{EXP}[fF]?)
+ID        ([_a-zA-Z][_a-zA-Z0-9]*)
+
+
 
 %x ML_COMMENT
 %%             /* BEGIN RULES SECTION */
@@ -67,7 +76,7 @@ BOOLEAN   (true|false)
 
 [\n]		{currentLineNum++; currentColNum = 1;}
 void 		{return T_Void;}
-[\t]    {currentColNum += 8 - currentColNum % 8;}
+[\t]    {currentColNum = (currentColNum + 7)/8 * 8 +1;}
 const   {return T_Const;}
 uniform {return T_Uniform;}
 break   {return T_Break;}
@@ -105,8 +114,9 @@ float   {return T_Float;}
 int     {return T_Int;}
 bool    {return T_Bool;}
 return  {return T_Return;}
+
 (==)    {return T_EQ;}
-[0-9]+  {yylval.integerConstant = strtol(yytext, NULL, 10); return T_IntConstant;}
+(!=)    {return T_NE;}
 [-]     {return T_Dash;}
 [+]     {return T_Plus;}
 [*]     {return T_Star;}
@@ -120,15 +130,42 @@ return  {return T_Return;}
 (\/=)   {return T_DivAssign;}
 (\+=)   {return T_AddAssign;}
 (-=)    {return T_SubAssign;}
+(\+\+)  {return T_Inc;}
+(--)    {return T_Dec;}
 [(]     {return T_LeftParen;}
 [)]     {return T_RightParen;}
 [[]     {return T_LeftBracket;}
 []]     {return T_RightBracket;}
 [{]     {return T_LeftBrace;}
 [}]     {return T_RightBrace;}
-[.]     {return T_Dot;}
+[.]     {flag = 2; return T_Dot;}
 [:]     {return T_Colon;}
 [?]     {return T_Question;}
+[\;]    {return T_Semicolon;}
+(&&)    {return T_And;}
+(\|\|)  {return T_Or;}
+
+{COMMENT} {}
+{SL_COMMENT} {}
+
+[0-9]+  {yylval.integerConstant = strtol(yytext, NULL, 10); return T_IntConstant;}
+
+{FLOAT_CONST} {yylval.floatConstant = strtod(yytext, NULL); return T_FloatConstant;}
+
+[0-9]+[uU] {yylval.integerConstant = strtol(yytext, NULL, 10); return T_UintConstant;}
+
+{ID}    {if(yyleng < 1023)
+            {strncpy(yylval.identifier, yytext, 31);}
+         else
+            {ReportError::LongIdentifier(&yylloc, yytext);
+             strncpy(yylval.identifier, yytext, 31);}
+         if(flag == 0){return T_Identifier;}
+         else {flag = 0; return T_FieldSelection;}
+         }
+
+.       {if (yytext[0] != ' '){ReportError::UnrecogChar(&yylloc, yytext[0]);}}
+
+
 
 
 %%
@@ -168,7 +205,8 @@ void InitScanner()
  * to group code common to all actions.
  */
 static void DoBeforeEachAction()
-{
+{   
+    if (flag > 0){flag--;}
     yylloc.first_line = currentLineNum;
     yylloc.last_line = currentLineNum;
 
